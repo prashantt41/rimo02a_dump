@@ -1,0 +1,34 @@
+# Smartron related runtime code goes here 
+
+on early-init
+    # permission for download_mode
+    chmod 0666 /sys/module/msm_poweroff/parameters/download_mode
+
+# Start the QXDM Log
+on property:sys.enable_qdxm_logging=1
+	start qxdmlog_start
+
+# Stop QXDM Log
+on property:sys.enable_qdxm_logging=0
+	start qxdmlog_stop
+
+service smartd /system/bin/smartd
+    class core
+    user system
+    group system
+    socket smartd stream 0660 system system
+    writepid /dev/cpuset/system-background/tasks
+
+service qxdmlog_start /system/vendor/bin/diag_mdlog -s 1024
+    class late_start
+    user shell
+    group system qcom_diag sdcard_rw sdcard_r media_rw
+    disabled
+    oneshot
+
+service qxdmlog_stop /system/vendor/bin/diag_mdlog -k
+    class late_start
+    user shell
+    group system qcom_diag sdcard_rw sdcard_r media_rw
+    disabled
+    oneshot
